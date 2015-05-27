@@ -8,6 +8,8 @@ class RemoteKomojuTest < Test::Unit::TestCase
     @amount = 100
     @credit_card = credit_card('4111111111111111')
     @declined_card = credit_card('4123111111111059')
+    @fraudulent_card = credit_card('4123111111111083')
+
     @konbini = {
       :type  => 'konbini',
       :store => 'lawson',
@@ -75,6 +77,13 @@ class RemoteKomojuTest < Test::Unit::TestCase
     assert_failure response
     assert response.authorization.blank?
     assert_equal 'card_declined', response.error_code
+  end
+
+  def test_detected_fraud
+    response = @gateway.purchase(@amount, @fraudulent_card, @options)
+    assert_failure response
+    assert response.authorization.blank?
+    assert_equal 'fraudulent', response.error_code
   end
 
   def test_invalid_login
